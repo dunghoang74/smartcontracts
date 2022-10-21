@@ -1015,18 +1015,20 @@ contract OneSH is ERC20, ERC20Burnable, Pausable, Ownable {
         address to,
         uint256 amount
     ) internal override whenNotPaused{
-         if (from == pancakeLiquidPair && !whitelisted[to]) {
+         if (from == pancakeLiquidPair && !whitelisted[to] && buyTax > 0 && feeWallet != address(0)) {
             uint256 fee = amount.mul(buyTax).div(PER_DIVI);
             uint256 transferA = amount.sub(fee);
             super._transfer(from, feeWallet, fee);
             super._transfer(from, to, transferA);
-         }
-
-        if (to == pancakeLiquidPair && !whitelisted[from]) {
+        } 
+        else if (to == pancakeLiquidPair && !whitelisted[from] && sellTax > 0 && feeWallet != address(0)) {
             uint256 fee = amount.mul(sellTax).div(PER_DIVI);
             uint256 transferA = amount.sub(fee);
             super._transfer(from, feeWallet, fee);
             super._transfer(from, to, transferA);
+        }
+        else {
+            super._transfer(from, to, amount);
         }
     }
 
