@@ -958,7 +958,8 @@ contract OneSH is ERC20, ERC20Burnable, Pausable, Ownable {
     uint256 public sellTax = 400; // 4%
     uint256 public buyTax = 0; // 0%
     address public feeWallet;
-    address public pancakeLiquidPair;
+    // address public pancakeLiquidPair;
+    mapping(address => bool) public lps;
 
     mapping(address => bool) public blacklisted;
     mapping(address => bool) public whitelisted;
@@ -967,7 +968,7 @@ contract OneSH is ERC20, ERC20Burnable, Pausable, Ownable {
     event SetMaxSell(uint256 MaxSell);
     event SetMaxBuy(uint256 MaxBuy);
     event SetAntiBotTime(uint256 antiBotStart, uint256 antiBotEnd);
-    event SetLiquidPair(address LP);
+    event SetLiquidPair(address LP, bool Status);
 
     constructor() ERC20('1 SHOOT', '1SH') {
         uint256 num = 1000000000 * 10**decimals();
@@ -1015,13 +1016,13 @@ contract OneSH is ERC20, ERC20Burnable, Pausable, Ownable {
         address to,
         uint256 amount
     ) internal override whenNotPaused{
-         if (from == pancakeLiquidPair && !whitelisted[to] && buyTax > 0 && feeWallet != address(0)) {
+         if (lps[from] == true && !whitelisted[to] && buyTax > 0 && feeWallet != address(0)) {
             uint256 fee = amount.mul(buyTax).div(PER_DIVI);
             uint256 transferA = amount.sub(fee);
             super._transfer(from, feeWallet, fee);
             super._transfer(from, to, transferA);
         } 
-        else if (to == pancakeLiquidPair && !whitelisted[from] && sellTax > 0 && feeWallet != address(0)) {
+        else if (lps[to] == true && !whitelisted[from] && sellTax > 0 && feeWallet != address(0)) {
             uint256 fee = amount.mul(sellTax).div(PER_DIVI);
             uint256 transferA = amount.sub(fee);
             super._transfer(from, feeWallet, fee);
@@ -1042,13 +1043,13 @@ contract OneSH is ERC20, ERC20Burnable, Pausable, Ownable {
         address _recipient,
         uint256 _amount
     ) internal view {
-        if (_sender == pancakeLiquidPair && !whitelisted[_recipient]) {
+        if (lps[_sender] == true && !whitelisted[_recipient]) {
         	if (_amount > maxBuy) {
           	revert("Anti bot buy");
           }
         }
 
-        if (_recipient == pancakeLiquidPair && !whitelisted[_sender]) {
+        if (lps[_recipient] == true  && !whitelisted[_sender]) {
             if (_amount > maxSell) {
                 revert("Anti bot sell");
             }
@@ -1079,10 +1080,10 @@ contract OneSH is ERC20, ERC20Burnable, Pausable, Ownable {
         emit SetAntiBotTime(_antiBotEnd, _antiBotEnd);
     }
 
-    function setLiquidPair(address _lp) external onlyOwner {
+    function setLiquidPair(address _lp, bool _status) external onlyOwner {
         require(address(0) != _lp,"_lp zero address");
-        pancakeLiquidPair = _lp;
-        emit SetLiquidPair(_lp);
+        lps[_lp] = _status;
+        emit SetLiquidPair(_lp, _status);
     }
 
     function setFeeWallet(address _feeWallet) public onlyOwner {
