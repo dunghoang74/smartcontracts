@@ -955,7 +955,8 @@ contract OneSH is ERC20, ERC20Burnable, Pausable, Ownable {
     uint256 public antiBotStart; 
     uint256 public antiBotEnd;
     uint256 public constant PER_DIVI = 10000;
-    uint256 public feeTransfer = 100; // 1%
+    uint256 public sellTax = 400; // 4%
+    uint256 public buyTax = 0; // 0%
     address public feeWallet;
     address public pancakeLiquidPair;
 
@@ -1009,19 +1010,23 @@ contract OneSH is ERC20, ERC20Burnable, Pausable, Ownable {
     }
 
 
-     function _transfer(
+    function _transfer(
         address from,
         address to,
         uint256 amount
     ) internal override whenNotPaused{
-         if (!whitelisted[from] && feeTransfer > 0) {
-            uint256 fee = amount.mul(feeTransfer).div(PER_DIVI);
+         if (from == pancakeLiquidPair && !whitelisted[to]) {
+            uint256 fee = amount.mul(buyTax).div(PER_DIVI);
             uint256 transferA = amount.sub(fee);
             super._transfer(from, feeWallet, fee);
             super._transfer(from, to, transferA);
-        } 
-        else {
-            super._transfer(from, to, amount);
+         }
+
+        if (to == pancakeLiquidPair && !whitelisted[from]) {
+            uint256 fee = amount.mul(sellTax).div(PER_DIVI);
+            uint256 transferA = amount.sub(fee);
+            super._transfer(from, feeWallet, fee);
+            super._transfer(from, to, transferA);
         }
     }
 
@@ -1063,7 +1068,6 @@ contract OneSH is ERC20, ERC20Burnable, Pausable, Ownable {
         emit SetMaxBuy(_maxBuy);
     }
 
-
     function setAntiBotTime(
         uint256 _antiBotStart,
         uint256 _antiBotEnd
@@ -1083,8 +1087,12 @@ contract OneSH is ERC20, ERC20Burnable, Pausable, Ownable {
         feeWallet = _feeWallet;
     }
 
-    function setFee(uint256 _feePercent) public onlyOwner {
-        feeTransfer = _feePercent;
+    function setSellTax(uint256 _taxPercent) public onlyOwner {
+        sellTax = _taxPercent;
+    }
+
+     function setBuyTax(uint256 _taxPercent) public onlyOwner {
+        buyTax = _taxPercent;
     }
 
     function rescueStuckToken(address _token, address _to) external onlyOwner {
