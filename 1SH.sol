@@ -958,7 +958,6 @@ contract OneSH is ERC20, ERC20Burnable, Pausable, Ownable {
     uint256 public sellTax = 400; // 4%
     uint256 public buyTax = 0; // 0%
     address public feeWallet;
-    // address public pancakeLiquidPair;
     mapping(address => bool) public lps;
 
     mapping(address => bool) public blacklisted;
