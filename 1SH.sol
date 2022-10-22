@@ -1,8 +1,4 @@
 /**
- *Submitted for verification at BscScan.com on 2022-10-21
-*/
-
-/**
  *Submitted for verification at BscScan.com on 2022-09-21
 */
 
@@ -949,7 +945,7 @@ library SafeMath {
 }
 
 
-contract TSH is ERC20, ERC20Burnable, Pausable, Ownable {
+contract OneSH is ERC20, ERC20Burnable, Pausable, Ownable {
     using SafeMath for uint256;
     uint256 private _cap;
 
@@ -973,7 +969,7 @@ contract TSH is ERC20, ERC20Burnable, Pausable, Ownable {
     event SetAntiBotTime(uint256 antiBotStart, uint256 antiBotEnd);
     event SetLiquidPair(address LP, bool Status);
 
-    constructor() ERC20('TSH', 'TSH') {
+    constructor() ERC20('1 SHOOT', '1SH') {
         uint256 num = 1000000000 * 10**decimals();
         _cap = num;
         _mint(msg.sender, num);
@@ -1012,6 +1008,7 @@ contract TSH is ERC20, ERC20Burnable, Pausable, Ownable {
 
         super._beforeTokenTransfer(from, to, amount);
     }
+
 
     function _transfer(
         address from,
