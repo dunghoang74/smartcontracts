@@ -947,7 +947,8 @@ library SafeMath {
 
 contract OneSH is ERC20, ERC20Burnable, Pausable, Ownable {
     using SafeMath for uint256;
-    uint256 private _cap;
+    uint256 private _minted;
+    uint256 private _maxCap = 1000000000 * 10**decimals();
 
     bool public isAntiBot;
     uint256 public maxBuy = 5000 * 10**decimals();
@@ -970,13 +971,12 @@ contract OneSH is ERC20, ERC20Burnable, Pausable, Ownable {
     event SetLiquidPair(address LP, bool Status);
 
     constructor() ERC20('1 SHOOT', '1SH') {
-        uint256 num = 1000000000 * 10**decimals();
-        _cap = num;
-        _mint(msg.sender, num);
+        _mint(msg.sender, _maxCap);
+        _minted = _maxCap;
     }
 
     function cap() public view virtual returns (uint256) {
-        return _cap;
+        return _minted;
     }
 
     function pause() public onlyOwner {
@@ -988,7 +988,7 @@ contract OneSH is ERC20, ERC20Burnable, Pausable, Ownable {
     }
 
     function _mint(address account, uint256 amount) internal override {
-        require(ERC20.totalSupply() + amount <= cap(), 'Cap exceeded');
+        require(_minted + amount <= _maxCap, 'Cap exceeded');
         super._mint(account, amount);
     }
 
